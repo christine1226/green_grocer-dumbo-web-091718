@@ -45,12 +45,25 @@ def apply_clearance(cart)
 end
 
 def checkout(cart, coupons)
-  cart = consolidate_cart(cart: cart)
-  cart = apply_coupons(cart: cart, coupons: coupons)
-  cart = apply_clearance(cart: cart)
-  result = 0
-  cart.each do |item, info|
-    result += (info[:price] * info[:count]).to_f
+  total = 0
+  cart = consolidate_cart(cart)
+  coupons_applied = apply_coupons(cart, coupon)
+  clearance_applied = apply_clearance(coupons_applied)
+  clearance_applied.each do |item, info|
+    if info[:count] < 0
+      info[:count] = -(info[:count])
+    end
+    if !item.include?("W/COUPON")
+      if clearance_applied[item][:count] < clearance_applied["#{item} W/COUPON"][:count]
+        clearance_applied["#{item} W/COUPON"][:count] = clearance_applied[item][:count]
+      end
+    end
+    total += (info[:price] * info[:count])
+    puts total
   end
-  result > 100 ? result * 0.10 : result
+    it total >=100
+    total = total - (total*.10)
+  else
+    total
+  end
 end
